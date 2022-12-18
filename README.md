@@ -38,10 +38,14 @@ Come to root directory and run this:
 ```bash
 python setup.py install
 ```
-### Issues During Installing
+It will installed with your local version.
+### Windows10: Issues During Installing
 1. LNK1158: cannot run 'rc.exe'  
-   copy ```rc.exe``` and ```rcdll.dll``` from ```C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86``` to ```C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin```
-2. fatal error C1083: Cannot open include file: 'basetsd.h': No such file or directory  
+   copy ```rc.exe``` and ```rcdll.dll``` from ```C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86``` to ```C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin```  
+   There is maybe not ``\10\bin\****\x86`` in your computer.  
+   That's ok, because it is just a version code depend by your system version.  
+   So just open biggest number in your compter, it will be work.
+2. Fatal error C1083: Cannot open include file: 'basetsd.h': No such file or directory  
    Install win10 SDK in Visual Studio Installer.  
    There is my dependenceis in Visual Studio Installer looks like:  
    ![](./static-markdown/dependencies.png)
