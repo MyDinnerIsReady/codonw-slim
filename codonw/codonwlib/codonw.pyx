@@ -23,9 +23,13 @@ from numpy.random import randn
 import requests
 __URL__ = "http://139.9.202.46/assets/backend_resource/weights/"
 def get_file_from_server(name):
-    request = requests.get(f'{__URL__}{name}', allow_redirects=True)
-    result = request.content.decode("utf-8").replace(" ", "").split("\n")
-    return result
+    file_name = name.replace(' ', '_')
+    request = requests.get(f'{__URL__}{file_name}', allow_redirects=True)
+    if request.status_code == 404:
+        raise Exception(f'Not such a file: {name}')
+    else:
+        result = request.content.decode("utf-8").replace(" ", "").split("\n")
+        return result
 
 def file2CAI(file):
     des = file[1].replace('"', "").replace(",", "").encode("utf-8")
@@ -135,7 +139,7 @@ cdef class CodonSeq:
 
 
     cpdef double cai(self, str cai_ref='Zootoca vivipara'):
-        cdef codonwlib.CAI_STRUCT ref_cai = file2CAI(get_file_from_server(cai_ref.replace(' ', '_')))
+        cdef codonwlib.CAI_STRUCT ref_cai = file2CAI(get_file_from_server(cai_ref))
         cdef double cai_val = 0
         cdef int ret = codonwlib.cai(&self.ncod[0], &cai_val, &self.dds[0], &ref_cai, &self.ref_code)
         return cai_val
