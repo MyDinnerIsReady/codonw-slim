@@ -18,6 +18,28 @@ np.import_array()
 import pandas as pd
 
 cimport codonwlib
+from numpy.random import randn
+
+import requests
+__URL__ = "http://139.9.202.46/assets/backend_resource/weights/"
+def get_file_from_server(name):
+    request = requests.get(f'{__URL__}{name}', allow_redirects=True)
+    result = request.content.decode("utf-8").replace(" ", "").split("\n")
+    return result
+
+def file2CAI(file):
+    des = file[1].replace('"', "").replace(",", "").encode("utf-8")
+    ref = file[2].replace('"', "").replace(",", "").encode("utf-8")
+    res = "".join(file[4:13]).replace("F", "").split(",")
+    cai_val = np.asarray(np.asarray(res, dtype=float), dtype=float)
+    cdef codonwlib.CAI_STRUCT ref_cai
+    ref_cai.des = des
+    ref_cai.ref = ref
+    ref_cai.cai_val = cai_val
+    return ref_cai
+    
+def test2():
+    return codonwlib.cai_ref[0]
 
 def convert_char(arr):
     return [c.decode('UTF-8') for c in arr]
@@ -112,43 +134,8 @@ cdef class CodonSeq:
         return
 
 
-    cpdef double cai(self, int cai_ref=0):
-        """Calculates Codon Adaptation Index
-
-        `cai_ref`: The relative adaptiveness of codon
-            0. Escherichia coli - No reference [default]
-            1. Bacillus subtilis - No reference
-            2. Saccharomyces cerevisiae - Sharp and Cowe (1991) Yeast 7:657-678
-
-        If you'd like to have user-provided reference values, please implement this
-        functionality and make a pull-request.
-
-
-        CAI is a measurement of the relative adaptiveness of the codon usage of a
-        gene towards the codon usage of highly expressed genes. The relative
-        adaptiveness (w) of each codon is the ratio of the usage of each codon, to
-        that of the most abundant codon for the same amino acid.
-        
-        The CAI index is defined as the geometric mean of these relative
-        adaptiveness values. Non-synonymous codons and termination codons (dependent
-        on genetic code) are excluded.
-
-        To prevent a codon absent from the reference set but present in other genes
-        from having a relative adaptiveness value of zero, which would cause CAI to
-        evaluate to zero for any genes which used that codon; it was suggested that
-        absent codons should be assigned a frequency of 0.5 (Sharp and Li 1987).
-        
-        An alternative suggestion was that such codons should be adjusted to
-        0.01, where otherwise it would be less than this value
-        [(Bulmer 1988)](https://doi.org/10.1046/j.1420-9101.1988.1010015.x).
-        
-        The CAI is calculated as using a natural log summation. To prevent a codon having
-        a relative adaptiveness value of zero, which could result in a CAI of zero, codons
-        with a value of < 0.0001 are adjusted to 0.01.
-
-        [Sharp and Li 1987](https://doi.org/10.1093/nar/15.3.1281)
-        """
-        cdef codonwlib.CAI_STRUCT ref_cai = codonwlib.cai_ref[cai_ref]
+    cpdef double cai(self, str cai_ref='Zootoca vivipara'):
+        cdef codonwlib.CAI_STRUCT ref_cai = file2CAI(get_file_from_server(cai_ref.replace(' ', '_')))
         cdef double cai_val = 0
         cdef int ret = codonwlib.cai(&self.ncod[0], &cai_val, &self.dds[0], &ref_cai, &self.ref_code)
         return cai_val
