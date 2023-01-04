@@ -28,10 +28,10 @@ def get_file_from_server(name):
     if request.status_code == 404:
         raise Exception(f'Not such a file: {name}')
     else:
-        result = request.content.decode("utf-8").replace(" ", "").split("\n")
-        return result
+        return request.content
 
-def file2CAI(file):
+def file2CAI(rawfile):
+    file = rawfile.decode("utf-8").replace(" ", "").split("\n")
     des = file[1].replace('"', "").replace(",", "").encode("utf-8")
     ref = file[2].replace('"', "").replace(",", "").encode("utf-8")
     res = "".join(file[4:13]).replace("F", "").split(",")
